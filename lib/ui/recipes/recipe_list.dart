@@ -23,14 +23,24 @@ class _RecipeListState extends State<RecipeList> {
 
   late TextEditingController searchTextController;
   final ScrollController _scrollController = ScrollController();
+
+  // 현재 검색 결과 데이터를 담고 있다.
   List<APIHits> currentSearchList = [];
+  // 1회 쿼리 검색이 얼마나 많은 결과를 담고 있나(`APIRecipeQuery.count`에 대응)
   int currentCount = 0;
   int currentStartPosition = 0;
   int currentEndPosition = 20;
-  int pageCount = 20;
+  // 한번에 데이터를 잡아올 window의 크기
+  final int pageCount = 20;
+
+  // 지정된 범위 외에 결과가 더 있는가?
   bool hasMore = false;
   bool loading = false;
+
+  // 통신 결과가 에러였는지 저장한 플래그
   bool inErrorState = false;
+
+  // 이전 검색 키워드들을 담고 있다.
   List<String> previousSearches = <String>[];
 
   @override
@@ -39,35 +49,53 @@ class _RecipeListState extends State<RecipeList> {
     getPreviousSearches();
     searchTextController = TextEditingController(text: '');
     _scrollController.addListener(() {
+      // 매 픽셀 스크롤 될 때마다 실행될 콜백.
       final triggerFetchMoreSize =
           0.7 * _scrollController.position.maxScrollExtent;
-
-      if (_scrollController.position.pixels > triggerFetchMoreSize) {
-        if (hasMore &&
-            currentEndPosition < currentCount &&
-            !loading &&
-            !inErrorState) {
-          setState(() {
-            loading = true;
-            currentStartPosition = currentEndPosition;
-            currentEndPosition =
-                min(currentStartPosition + pageCount, currentCount);
-          });
-        }
+      // 70% 이상에 도달했을 때 더 읽을 검색 결과가 있으면 화면 갱신.
+      final didScrollbarStepOver =
+          _scrollController.position.pixels > triggerFetchMoreSize;
+      if (didScrollbarStepOver &&
+          hasMore &&
+          currentEndPosition < currentCount &&
+          !loading &&
+          !inErrorState) {
+        setState(() {
+          loading = true;
+          currentStartPosition = currentEndPosition;
+          currentEndPosition =
+              min(currentStartPosition + pageCount, currentCount);
+        });
       }
     });
-  }
-
-  Future<APIRecipeQuery> getRecipeData(String query, int from, int to) async {
-    final recipeJson = await RecipeService().getRecipes(query, from, to);
-    final recipeMap = json.decode(recipeJson);
-    return APIRecipeQuery.fromJson(recipeMap);
   }
 
   @override
   void dispose() {
     searchTextController.dispose();
     super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: Colors.white,
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: <Widget>[
+            _buildSearchCard(),
+            _buildRecipeLoader(context),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<APIRecipeQuery> getRecipeData(String query, int from, int to) async {
+    final recipeJson = await RecipeService().getRecipes(query, from, to);
+    final recipeMap = json.decode(recipeJson);
+    return APIRecipeQuery.fromJson(recipeMap);
   }
 
   void savePreviousSearches() async {
@@ -85,22 +113,6 @@ class _RecipeListState extends State<RecipeList> {
         previousSearches = <String>[];
       }
     }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: Colors.white,
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: <Widget>[
-            _buildSearchCard(),
-            _buildRecipeLoader(context),
-          ],
-        ),
-      ),
-    );
   }
 
   Widget _buildSearchCard() {
@@ -174,16 +186,16 @@ class _RecipeListState extends State<RecipeList> {
     );
   }
 
-  void startSearch(String value) {
+  void startSearch(String keyword) {
     setState(() {
       currentSearchList.clear();
       currentCount = 0;
       currentEndPosition = pageCount;
       currentStartPosition = 0;
       hasMore = true;
-      value = value.trim();
-      if (!previousSearches.contains(value)) {
-        previousSearches.add(value);
+      keyword = keyword.trim();
+      if (!previousSearches.contains(keyword)) {
+        previousSearches.add(keyword);
         savePreviousSearches();
       }
     });
@@ -267,7 +279,7 @@ class _RecipeListState extends State<RecipeList> {
         Navigator.push(topLevelContext,
             MaterialPageRoute(builder: (context) => const RecipeDetails()));
       },
-      child: recipeCard(recipe),
+      child: RecipeCard(recipe),
     );
   }
 }

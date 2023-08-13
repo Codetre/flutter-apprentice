@@ -7,8 +7,33 @@ Packages
     모든 코드 생성기들이 .part file 클래스들을 빌드하기 위해 필요한 패키지
 `services.rootBundle` is the top-level property that holds references to all the items in the asset 
 folder. This loads the file as a string.
+- `bool MaterialApp.debugShowCheckedModeBanner`: AppBar에 있는 'Debug'란 띠를 없앤다. 
+- SVG 그림을 UI에 보여주고 싶다면 `svg_picture` 패키지를 사용하면 된다.
+- `cached_network_image` 패키지로 웹에서 가져온 이미지를 잠시 저장해 둘 수 있다.
 
 # Project Description
+- `main.dart`
+- network/
+  - `recipe_model.dart`
+    - `APIRecipeQuery`는 검색 결과를 모델링한 클래스이다.
+      - count는 쿼리로 찾아낸 모든 결과의 수
+      - from, to는 그 중에서 현재 Fetching한 범위
+- ui/
+  - `main_screen.dart`
+    - 현재 어느 BottomNavigationBarItem에 머물러 있는지 SharedPreferences로 기억해둔다.
+  - recipes/
+    - `recipe_list.dart`
+      - `MainScreen`의 `BottomNavigationBar` 첫번째 아이템이다.
+      - `prefSearchKey`로 검색 이력을 기기에 저장한다.
+      - UI는 검색 입력과 검색 결과를 보여주는 두 부분이 수직으로 나열된다.
+        - 검색 입력(`_buildSearchCard()`)
+        - 검색 결과(`_buildRecipeLoader()`)
+    - `recipe_details.dart`: `RecipeCard`를 클릭하면 나타나는 페이지다.
+  - `recipe_card.dart`: `APIRecipe`를 하나 받아 관련 정보(명칭, 칼로리 등)를 카드 형태로 표시한다.
+
+# SharedPreferences
+디바이스에 저장할 데이터의 키 이름을 설정하고, 데이터를 저장하거나 얻는다.
+`SharedPreferences.getInstance()`로 호출한 인스턴스가 데이터 액세스의 시작 지점이다.  
 
 
 # Serialize/Deserialize JSON

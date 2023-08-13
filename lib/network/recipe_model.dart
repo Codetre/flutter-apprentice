@@ -17,9 +17,11 @@ class APIRecipeQuery {
    */
   @JsonKey(name: 'q')
   String query;
+  // len(hits) == (to - 1) - from
   int from;
   int to;
   bool more;
+  // count 내에서 from~to로 검색 결과를 제한한다.
   int count;
   List<APIHits> hits;
 

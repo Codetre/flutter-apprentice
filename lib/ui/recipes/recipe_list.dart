@@ -1,9 +1,11 @@
-import 'dart:convert';
+import 'dart:collection';
 import 'dart:math';
 
+import 'package:chopper/chopper.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../network/model_response.dart';
 import '../../network/recipe_model.dart';
 import '../../network/recipe_service.dart';
 import '../colors.dart';
@@ -26,10 +28,12 @@ class _RecipeListState extends State<RecipeList> {
 
   // 현재 검색 결과 데이터를 담고 있다.
   List<APIHits> currentSearchList = [];
+
   // 1회 쿼리 검색이 얼마나 많은 결과를 담고 있나(`APIRecipeQuery.count`에 대응)
   int currentCount = 0;
   int currentStartPosition = 0;
   int currentEndPosition = 20;
+
   // 한번에 데이터를 잡아올 window의 크기
   final int pageCount = 20;
 
@@ -92,12 +96,6 @@ class _RecipeListState extends State<RecipeList> {
     );
   }
 
-  Future<APIRecipeQuery> getRecipeData(String query, int from, int to) async {
-    final recipeJson = await RecipeService().getRecipes(query, from, to);
-    final recipeMap = json.decode(recipeJson);
-    return APIRecipeQuery.fromJson(recipeMap);
-  }
-
   void savePreviousSearches() async {
     final prefs = await SharedPreferences.getInstance();
     prefs.setStringList(prefSearchKey, previousSearches);
@@ -145,10 +143,12 @@ class _RecipeListState extends State<RecipeList> {
                     decoration: const InputDecoration(
                         border: InputBorder.none, hintText: 'Search'),
                     autofocus: false,
+                    /* 유저가 컨트롤러에게 수행을 요청할 동작을 작성한다. 소프트 키보드가 올라오면
+                     * '확인' 위치의 버튼 모양이 조금씩 다른 것으로 구별할 수 있다.
+                     */
                     textInputAction: TextInputAction.done,
-                    onSubmitted: (value) {
-                      startSearch(searchTextController.text);
-                    },
+                    onSubmitted: (value) =>
+                        startSearch(searchTextController.text),
                     controller: searchTextController,
                   )),
                   PopupMenuButton<String>(
@@ -166,13 +166,11 @@ class _RecipeListState extends State<RecipeList> {
                         return CustomDropdownMenuItem<String>(
                           text: value,
                           value: value,
-                          callback: () {
-                            setState(() {
-                              previousSearches.remove(value);
-                              savePreviousSearches();
-                              Navigator.pop(context);
-                            });
-                          },
+                          callback: () => setState(() {
+                            previousSearches.remove(value);
+                            savePreviousSearches();
+                            Navigator.pop(context);
+                          }),
                         );
                       }).toList();
                     },
@@ -205,11 +203,11 @@ class _RecipeListState extends State<RecipeList> {
     if (searchTextController.text.length < 3) {
       return Container();
     }
-
-    // Future의 상태에 따라 어떤 위젯을 빌드할지 결정할 수 있다.
-    return FutureBuilder<APIRecipeQuery>(
-      future: getRecipeData(searchTextController.text.trim(),
-          currentStartPosition, currentEndPosition),
+    return FutureBuilder<Response<Result<APIRecipeQuery>>>(
+      future: RecipeService.create().queryRecipes(
+          searchTextController.text.trim(),
+          currentStartPosition,
+          currentEndPosition),
       builder: (context, snapshot) {
         /* |- notDone
          * |- done
@@ -229,7 +227,36 @@ class _RecipeListState extends State<RecipeList> {
           }
           // 에러가 없는 경우 리턴할 위젯 결정.
           loading = false;
-          final query = snapshot.data;
+
+          // Whether the call was successful?
+          if (snapshot.data?.isSuccessful == false) {
+            var errorMessage = 'Problems getting data';
+            // Extract the error message if any error.
+            if (snapshot.data?.error != null &&
+                snapshot.data?.error is LinkedHashMap) {
+              final map = snapshot.data?.error as LinkedHashMap;
+              errorMessage = map['message'];
+            }
+            return Center(
+              child: Text(
+                errorMessage,
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontSize: 18.0),
+              ),
+            );
+          }
+
+          //
+          final result = snapshot.data?.body;
+          if (result == null || result is Error) {
+            // Hit an error
+            inErrorState = true;
+            return _buildRecipeList(context, currentSearchList);
+          }
+
+          // Cast it as `Success` because `result` is success from this line.
+          final query = (result as Success).value;
+
           inErrorState = false;
           if (query != null) {
             currentCount = query.count;
@@ -262,7 +289,7 @@ class _RecipeListState extends State<RecipeList> {
           controller: _scrollController,
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,
-            childAspectRatio: itemHeight / itemWidth,
+            childAspectRatio: itemWidth / itemHeight,
           ),
           itemCount: hits.length,
           itemBuilder: (BuildContext context, int index) {

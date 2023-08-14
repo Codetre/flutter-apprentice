@@ -1,10 +1,22 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
+import 'package:logging/logging.dart';
 
 import 'ui/main_screen.dart';
 
 Future<void> main() async {
+  _setupLogging();
   WidgetsFlutterBinding.ensureInitialized();
   runApp(const MyApp());
+}
+
+/// Initializes the logging package and allows Chopper to log requests and
+/// responses. `Level.ALL` makes you be able to see every log statement.
+void _setupLogging() {
+  Logger.root.level = Level.ALL;
+  Logger.root.onRecord.listen((LogRecord record) =>
+      log('${record.level.name}: ${record.time}: ${record.message}'));
 }
 
 class MyApp extends StatelessWidget {

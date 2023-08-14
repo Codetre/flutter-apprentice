@@ -1,32 +1,47 @@
-import 'dart:developer';
+import 'package:chopper/chopper.dart';
 
-import 'package:http/http.dart';
+import 'model_converter.dart';
+import 'model_response.dart';
+import 'recipe_model.dart';
 
-// constants for calling APIs
+part 'recipe_service.chopper.dart';
+
 const String apiKey = '28d368e437cddb2886e39585173096d6';
 const String apiId = 'ec20dab6';
-const String apiUrl = 'https://api.edamam.com/search';
+const String apiUrl = 'https://api.edamam.com';
 
-/// Manage the connection to the recipe API server.
-class RecipeService {
-  Future<dynamic> getData(String url) async {
-    final response = await get(Uri.parse(url));
-    if (response.statusCode == 200) {
-      return response.body;
-    } else {
-      log(response.body);
-    }
+/* `@ChopperApi()` tells for Chopper generator to build a part file holing
+ * boilerplate code whose name is the same except for `.chopper.dart`.
+ * That's why `abstract` followed by the class signature. implemented class is
+ * created by the chopper generator.
+ */
+@ChopperApi()
+abstract class RecipeService extends ChopperService {
+  // The chopper generator creates the body for this method.
+  @Get(path: 'search')
+  Future<Response<Result<APIRecipeQuery>>> queryRecipes(
+      @Query('q') String query, @Query('from') int from, @Query('to') int to);
+
+  static RecipeService create() {
+    final client = ChopperClient(
+      baseUrl: Uri.tryParse(apiUrl),
+      // `HttpLoggingInterceptor` logs all calls
+      interceptors: [_addQuery, HttpLoggingInterceptor()],
+      // 인터셉터가 실행되기 전 요청과 응답을 변환시키기 위한 변환기.
+      converter: ModelConverter(),
+      // `JsonConverter` decodes any error to JSON format.
+      errorConverter: const JsonConverter(),
+      // It is created when the generator script runs.
+      services: [_$RecipeService()],
+    );
+    return _$RecipeService(client);
   }
+}
 
-  Future<dynamic> getRecipes(String query, int from, int to) async {
-    const path = apiUrl;
-    const q1 = '?app_id=$apiId';
-    const q2 = '&app_key=$apiKey';
-    final q3 = '&q=$query';
-    final q4 = '&from=$from';
-    final q5 = '&to=$to';
-
-    final recipeData = await getData(path + q1 + q2 + q3 + q4 + q5);
-    return recipeData;
-  }
+/// Request interceptor that inserts API ID and key.
+Request _addQuery(Request request) {
+  final params = Map<String, dynamic>.from(request.parameters);
+  params['app_id'] = apiId;
+  params['app_key'] = apiKey;
+  return request.copyWith(parameters: params);
 }

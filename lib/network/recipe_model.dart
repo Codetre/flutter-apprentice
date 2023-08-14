@@ -4,11 +4,11 @@ part 'recipe_model.g.dart';
 
 @JsonSerializable()
 class APIRecipeQuery {
-  // Deserialization
+  // Deserialization: Map -> class
   factory APIRecipeQuery.fromJson(Map<String, dynamic> json) =>
       _$APIRecipeQueryFromJson(json);
 
-  // Serialization
+  // Serialization: class -> Map
   Map<String, dynamic> toJson() => _$APIRecipeQueryToJson(this);
 
   /* JSON 상 필드명과 클래스 내 필드명이 다르지만 같은 것으로 취급하려 할 때 아래처럼 연결한다:

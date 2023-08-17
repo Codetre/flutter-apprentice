@@ -2,7 +2,10 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
+import 'package:provider/provider.dart';
 
+import 'data/memory_repository.dart';
+import 'mock_service/mock_service.dart';
 import 'ui/main_screen.dart';
 
 Future<void> main() async {
@@ -25,16 +28,27 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Recipes',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        brightness: Brightness.light,
-        primaryColor: Colors.white,
-        primarySwatch: Colors.blue,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider<MemoryRepository>(
+            lazy: false, create: (BuildContext context) => MemoryRepository()),
+        Provider(
+            lazy: false,
+            /* You should use double dots, which return the caller, not the
+             * return of the method. */
+            create: (BuildContext context) => MockService()..create()),
+      ],
+      child: MaterialApp(
+        title: 'Recipes',
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          brightness: Brightness.light,
+          primaryColor: Colors.white,
+          primarySwatch: Colors.blue,
+          visualDensity: VisualDensity.adaptivePlatformDensity,
+        ),
+        home: const MainScreen(),
       ),
-      home: const MainScreen(),
     );
   }
 }

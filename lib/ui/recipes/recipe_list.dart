@@ -3,11 +3,13 @@ import 'dart:math';
 
 import 'package:chopper/chopper.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../network/model_response.dart';
+import '../../data/models/models.dart';
+import '../../mock_service/mock_service.dart';
 import '../../network/recipe_model.dart';
-import '../../network/recipe_service.dart';
 import '../colors.dart';
 import '../recipe_card.dart';
 import '../widgets/custom_dropdown.dart';
@@ -204,7 +206,8 @@ class _RecipeListState extends State<RecipeList> {
       return Container();
     }
     return FutureBuilder<Response<Result<APIRecipeQuery>>>(
-      future: RecipeService.create().queryRecipes(
+      future: Provider.of<MockService>(context).queryRecipes(
+          // RecipeService.create().queryRecipes(
           searchTextController.text.trim(),
           currentStartPosition,
           currentEndPosition),
@@ -225,10 +228,9 @@ class _RecipeListState extends State<RecipeList> {
               ),
             );
           }
-          // 에러가 없는 경우 리턴할 위젯 결정.
           loading = false;
 
-          // Whether the call was successful?
+          // When the call failed.
           if (snapshot.data?.isSuccessful == false) {
             var errorMessage = 'Problems getting data';
             // Extract the error message if any error.
@@ -246,7 +248,6 @@ class _RecipeListState extends State<RecipeList> {
             );
           }
 
-          //
           final result = snapshot.data?.body;
           if (result == null || result is Error) {
             // Hit an error
@@ -255,16 +256,13 @@ class _RecipeListState extends State<RecipeList> {
           }
 
           // Cast it as `Success` because `result` is success from this line.
-          final query = (result as Success).value;
-
+          final APIRecipeQuery query = (result as Success).value;
           inErrorState = false;
-          if (query != null) {
-            currentCount = query.count;
-            hasMore = query.more;
-            currentSearchList.addAll(query.hits);
-            if (query.to < currentEndPosition) {
-              currentEndPosition = query.to;
-            }
+          currentCount = query.count;
+          hasMore = query.more;
+          currentSearchList.addAll(query.hits);
+          if (query.to < currentEndPosition) {
+            currentEndPosition = query.to;
           }
           return _buildRecipeList(context, currentSearchList);
         } else {
@@ -303,8 +301,19 @@ class _RecipeListState extends State<RecipeList> {
     final recipe = hits[index].recipe;
     return GestureDetector(
       onTap: () {
-        Navigator.push(topLevelContext,
-            MaterialPageRoute(builder: (context) => const RecipeDetails()));
+        Navigator.push(topLevelContext, MaterialPageRoute(builder: (context) {
+          final detailRecipe = Recipe(
+            label: recipe.label,
+            image: recipe.image,
+            url: recipe.url,
+            calories: recipe.calories,
+            totalWeight: recipe.totalWeight,
+            totalTime: recipe.totalTime,
+          );
+          detailRecipe.ingredients = convertIngredients(recipe.ingredients);
+
+          return RecipeDetails(recipe: detailRecipe);
+        }));
       },
       child: RecipeCard(recipe),
     );

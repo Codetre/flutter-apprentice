@@ -3,10 +3,29 @@
 - `services.rootBundle`은 asset 폴 더 내 모든 자원의 참조에 액세스할 수 있다. 파일을 `String` 형태로 읽어들인다.
 - `bool MaterialApp.debugShowCheckedModeBanner`: AppBar에 있는 'Debug'란 띠를 없앤다.
 
+## State management
+UI = f(state)
+state 변화에 따라 UI를 직접 바꾸는 것보다, 상태 변화를 추적해 UI 부분이 이를 감지해 알아서 바뀔 수 있는 일관된 개발 패턴을 정립하는 것이 더 편하다.
+이를 '상태 관리'라고 부른다.
+- Ephemeral state(UI state): 위젯 상태를 다른 곳에서 액세스하지 않는다.
+- app state: 다른 곳에서 위젯의 상태에 접근하게 된다.
+
+### Provider
+- `ChangeNotifier`
+  - `notifyListeners()`
+- `Consumer`
+  - `of<T>()`: use when don't need notifications when te dat changes, instead of `Consumer`.
+- `ChangeNotifierProvider`: `create` parameter save `ChangeNotifier` instead of re-creating one
+- `FutureProvider`
+  - `create: (context) => createFuture()` which returns Future<T>
+- `MultiProvider`: Use this rather than nesting `Provider`s. 
+
 ## Packages
 - `chopper`: advanced networking than `http`
 - `chopper_generator`: boilerplate code in the form of a part file generator for `chopper`
 - `logging`
+- `provider`
+- `equatable`: provides `equals()`, `toString()`, `hashchode`
 - `json_annotation`: JSON -> model을 위해, 생성할 모델 클래스에 annotation을 단다(`@JsonSerializable()`).
 - `json_serializable`: annotation에 따라 JSON 파일을 model class로 변환하는 빌더 클래스 코드를 생성한다.
 - `build_runner`: Dart 언어를 사용하는 코드를 자동 생성하기 위한 수단을 제공. 모든 코드 생성기(여기선 `json_serializable`)들이 .part file 클래스들을 빌드하기 위해 필요한 패키지
@@ -53,7 +72,19 @@ class Model {
   - `recipe_card.dart`: `APIRecipe`를 하나 받아 관련 정보(명칭, 칼로리 등)를 카드 형태로 표시한다.
 
 # Dart
+- Square brackets in method signature mean optional parameter(ex: `Future.value([Future<T>? value])`).
+
+
 라이브러리를 단독 실행할 때: `dart run <library_name> <library_command>`
+`Future == Future<dynamic>`이다.
+
+## Mixin(믹스인)
+class A, B, C가 있고 이들의 상속형 ExtendedA,ExtendedB, ExtendedC가 있다고 하자.
+그런데 확장된(=상속된) 클래스들을 보니, 동일한 기능들을 추가하기 위해 확장됐음을 알게 됐다.
+이 경우 EA, EB, EC는 기능은 공통이겠지만 코드는 각자 따로 구현돼 있으니 변경이 생기면 모두 세 번 코드를 수정해야 한다.
+이럴 바에야 차라리 기능만을 담은 클래스를 하나 만들고 A, B, C에 이 기능을 끼워 넣는 방식을 사용하면 
+기능을 담은 클래스 한 곳만을 수정하는 이점이 있다. 이 기능을 담은 클래스를 'Mixin class'라 하며 믹스인 클래스를 필요로 하는 
+클래스에 믹스인 클래스를 끼워 넣기 위해서는 `with` 키워드를 사용한다. `FuncNeedCls with Mixin` 이렇게 말이다. 
 
 ## `library`, `part`, `part of` directives
 library file has lines
@@ -62,7 +93,7 @@ library file has lines
 part file has lines
 - `part of <path/to/library_file.dart`
 
-## `library` directive
+### `library` directive
 The import and library directives can help you create a modular and shareable code base. 
 Libraries not only provide APIs, but are a unit of privacy: identifiers that start with an 
 underscore (_) are visible only inside the library. Every Dart file (plus its parts) is a library, 

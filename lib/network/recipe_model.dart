@@ -1,5 +1,7 @@
 import 'package:json_annotation/json_annotation.dart';
 
+import '../data/models/models.dart';
+
 part 'recipe_model.g.dart';
 
 @JsonSerializable()
@@ -17,10 +19,12 @@ class APIRecipeQuery {
    */
   @JsonKey(name: 'q')
   String query;
+
   // len(hits) == (to - 1) - from
   int from;
   int to;
   bool more;
+
   // count 내에서 from~to로 검색 결과를 제한한다.
   int count;
   List<APIHits> hits;
@@ -95,4 +99,15 @@ class APIIngredients {
       _$APIIngredientsFromJson(json);
 
   Map<String, dynamic> toJson() => _$APIIngredientsToJson(this);
+}
+
+/// network ingredient model -> display ingredient model
+List<Ingredient> convertIngredients(List<APIIngredients> apiIngredients) {
+  final ingredients = <Ingredient>[];
+  for (final apiIngredient in apiIngredients) {
+    ingredients.add(
+        Ingredient(name: apiIngredient.name, weight: apiIngredient.weight));
+  }
+
+  return ingredients;
 }

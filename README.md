@@ -1,5 +1,6 @@
 # Flutter
-- `pubspec.yaml` 내 `dev_dependencies` 항목은 오로지 개발 단계에서 필요한 패키지를 나열한다. 
+- `pubspec.yaml` 내 `dev_dependencies` 항목은 오로지 개발 단계에서 필요한 패키지를 나열한다.
+- `pubspec.yaml` 내 `sqflite: ^2.0.3+1` 더하기 기호는 '빌드'를 의미한다.  
 - `services.rootBundle`은 asset 폴 더 내 모든 자원의 참조에 액세스할 수 있다. 파일을 `String` 형태로 읽어들인다.
 - `bool MaterialApp.debugShowCheckedModeBanner`: AppBar에 있는 'Debug'란 띠를 없앤다.
 
@@ -21,6 +22,12 @@ state 변화에 따라 UI를 직접 바꾸는 것보다, 상태 변화를 추적
 - `MultiProvider`: Use this rather than nesting `Provider`s. 
 
 ## Packages
+- `sqflite`: give access to database. 
+- `sqlbrite`: reactive stream wrapper around sqlite database. It notify changes on database through stream.
+- `moor`: you don't need to write SQL code. Write Dart code and this package handles to translate it to SQL.
+- `path`: library that helps manipulating file paths.
+- `path_provider`: simplifies dealing with common file system locations.
+- `synchronized`: helps implement lock mechanisms to prevent concurrent access, when needed.
 - `chopper`: advanced networking than `http`
 - `chopper_generator`: boilerplate code in the form of a part file generator for `chopper`
 - `logging`
@@ -97,6 +104,8 @@ class Point {
 
 ## Asynchronous
 async, await, try, catch, 
+`yield <event>`
+`yield* <Stream>` delegating emit event to another stream.  
 
 ## Stream
 배달 서비스와 비슷하다. 배달을 10건 시켰고 도착 시 초인종을 누르라고 요청했다고 가정하자. 마지막 배달을 끝내면 그 다음에 배달이 

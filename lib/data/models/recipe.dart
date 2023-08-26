@@ -31,4 +31,27 @@ class Recipe extends Equatable {
     totalWeight,
     totalTime,
   ];
+
+  /// Create a Recipe from JSON data.
+  factory Recipe.fromJson(Map<String, dynamic> json) => Recipe(
+    id: json['recipeId'],
+    label: json['label'],
+    image: json['image'],
+    url: json['url'],
+    calories: json['calories'],
+    totalWeight: json['totalWeight'],
+    totalTime: json['totalTime'],
+  );
+
+  /// Convert Recipe object to JSON format to make it easier when you store it
+  /// in the database.
+  Map<String, dynamic> toJson() => {
+    'recipeId': id,
+    'label': label,
+    'image': image,
+    'url': url,
+    'calories': calories,
+    'totalWeight': totalWeight,
+    'totalTime': totalTime,
+  };
 }

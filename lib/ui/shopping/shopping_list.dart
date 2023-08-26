@@ -7,7 +7,6 @@ import '../../data/repository.dart';
 class ShoppingList extends StatefulWidget {
   const ShoppingList({Key? key}) : super(key: key);
 
-  // TODO 1
   @override
   State<ShoppingList> createState() => _ShoppingListState();
 }

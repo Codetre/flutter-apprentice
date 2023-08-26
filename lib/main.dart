@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 import 'package:provider/provider.dart';
 
-import 'data/memory_repository.dart';
 import 'data/repository.dart';
+import 'data/sqlite/sqlite_repository.dart';
 import 'network/recipe_service.dart';
 import 'network/service_interface.dart';
 import 'ui/main_screen.dart';
@@ -13,19 +13,23 @@ import 'ui/main_screen.dart';
 Future<void> main() async {
   _setupLogging();
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const MyApp());
+  final Repository repository = SqliteRepository();
+  await repository.init();
+  runApp(MyApp(repository: repository));
 }
 
 /// Initializes the logging package and allows Chopper to log requests and
 /// responses. `Level.ALL` makes you be able to see every log statement.
 void _setupLogging() {
-  Logger.root.level = Level.ALL;
+  Logger.root.level = Level.WARNING;
   Logger.root.onRecord.listen((LogRecord record) =>
       log('${record.level.name}: ${record.time}: ${record.message}'));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  final Repository repository;
+
+  const MyApp({required this.repository, Key? key}) : super(key: key);
 
   // This widget is the root of your application.
   @override
@@ -33,7 +37,12 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         Provider<Repository>(
-            lazy: false, create: (BuildContext context) => MemoryRepository()),
+          lazy: false,
+          create: (BuildContext context) => repository,
+          dispose: (BuildContext context, Repository repository) {
+            repository.close();
+          },
+        ),
         Provider<ServiceInterface>(
             lazy: false,
             create: (BuildContext context) => RecipeService.create()),

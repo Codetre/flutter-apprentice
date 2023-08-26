@@ -14,7 +14,7 @@ import 'ui/main_screen.dart';
 Future<void> main() async {
   _setupLogging();
   WidgetsFlutterBinding.ensureInitialized();
-  final repository = SqliteRepository();  // or assign `DriftRepository()`
+  final repository = DriftRepository();
   repository.init();
   runApp(MyApp(repository: repository));
 }
@@ -30,7 +30,7 @@ void _setupLogging() {
 class MyApp extends StatelessWidget {
   final Repository repository;
 
-  const MyApp({Key? key, required this.repository}) : super(key: key);
+  const MyApp({required this.repository, Key? key}) : super(key: key);
 
   // This widget is the root of your application.
   @override

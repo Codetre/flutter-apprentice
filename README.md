@@ -72,11 +72,100 @@ class Model {
   - `recipe_card.dart`: `APIRecipe`를 하나 받아 관련 정보(명칭, 칼로리 등)를 카드 형태로 표시한다.
 
 # Dart
+- `??=`: Assign value to a variable if it is null; otherwise, it stays the same
+
+delegate, delegator: 어떤 작업을 직접 하지 않고, 다른 객체나 메소드에게 위임(delegate)할 때가 있다. 이 경우 그렇게 작업을
+위임 받은 객체나 메소드 등을 delegator라고 부른다.
+constructor에 쓰이는 `:`은 final 필드도 초기화 할 수 있다. 콤마로 구분된다.
+```dart
+class Point {
+  double x, y;
+
+  Point(this.x, this.y);
+
+  // The main constructor is a delegator for this constructor.
+  // It delegates construction to the main constructor.
+  Point.alongXAxis(double x): this(x, 0);
+
+}
+```
 - Square brackets in method signature mean optional parameter(ex: `Future.value([Future<T>? value])`).
 
 
 라이브러리를 단독 실행할 때: `dart run <library_name> <library_command>`
 `Future == Future<dynamic>`이다.
+
+## Asynchronous
+async, await, try, catch, 
+
+## Stream
+배달 서비스와 비슷하다. 배달을 10건 시켰고 도착 시 초인종을 누르라고 요청했다고 가정하자. 마지막 배달을 끝내면 그 다음에 배달이 
+끝났음을 알리는 특별한 알림 서비스를 배달의 형태로 해준다. 10건이 언제올지는 모르고(비동기) 도착 시 알림을 받는다는 점에서 이벤트를 
+받는다는 것과 마찬가지다. 
+data event, error event
+error event 발생 시 Stream은 중단됨이 기본 동작
+- Single subscription stream: 이벤트는 정확한 순서, 누락이 있어선 안된다.  
+- 
+Stream에 구독자(listener=subscriber)를 연결한 경우 이 구독 상태를 제어할 필요가 있다. 이는 `stream.listen()`가 반환하는 
+`StreamSubscription` 객체로 제어 가능하다. 
+```dart
+void main() {
+  Stream<int> stream = Stream.periodic(
+    Duration(seconds: 2),
+    (i)=> i * i,
+  );
+  
+  final listener = periodic;
+  StreamSubscription subscription = stream.listen(listener);
+  
+  // Wait for a while the listener do some task.
+  
+  subscription.pause();
+}
+```
+
+Future가 단일 값 혹은 에러로 결정될 것이지만 아직 결정되지 않은 타입을 나타냈다면, Stream은 그러한 Future의 연속체로 볼 수 있다.
+int -> Future<int>
+Iterataor<int> -> Stream<int>
+리스너가 잡아야 할 데이터 이벤트들을 보내는 것이 스트림의 역할. 데이터 말고도 에러들을 보낼 수도 있다.
+앱의 한 부분(위젯)에서 데이터 이벤트를 보내는 동안 다른 곳에서는 그 이벤트들을 청취할 수 있다.
+- Single subscription stream
+  - 기본 스트림이며, 단일 listener를 지닌다.
+  - 리스너가 청취를 시작하기 전에는 이벤트가 발생하지 않고, 리스너가 청취를 그만두면 데이터가 더 남아 있어도 보내지 않고 중단한다.
+- Broadcast stream
+  - 여러 리스너를 지닐 수 있다.
+  - 리스너가 있든 없든 상관 없이 이벤트를 발생시킨다.
+  - `singleStream.asBroadcastStream()`으로 생성할 수 있다.
+  - 어떤 스트림이 싱글인지 브로드캐스트인지 알려면 `.isBroadcast` 불리언 속성을 확인하면 된다.
+`StreamController` has `Stream`, `StreamSink`.
+`StreamSink`는 데이터의 목적지다. 컨트롤러는 싱크에 도달한 데이터를 listener에게 전달한다.
+`StreamSubscription`, `StreamBuilder`
+```dart
+// 데이터가 싱크에 도달 -> 컨트롤러는 데이터를 스트림으로 보낸다 -> 스트림은 구동 중인 리스너에게 데이터를 보낸다.
+final controller = StreamController<TypeOfData>();
+controller.sink.add(dataFromNetwork); 
+
+StreamSubscription subscription = stream.listen((valueFromSink) {
+  // Rebuild a widget.
+  setState(() => widgetProperty = valueFromSink);
+});
+
+// Widget destroyed.
+subscription.cancel();
+controller.close();
+```
+
+그렇지만 이러한 과정을 `FutureBuilder`처럼 편리하게 작성할 수 있다.
+```dart
+final provider = Provider.of<Repository>(context, listen: false);
+// Build UI by the stream.
+return StreamBuilder<List<Recipe>>(
+  stream: repository.recipeStream(),
+  builder:(context, AsyncSnapshot<List<Recipe>> snapshot){
+
+  },
+);
+```
 
 ## Mixin(믹스인)
 class A, B, C가 있고 이들의 상속형 ExtendedA,ExtendedB, ExtendedC가 있다고 하자.

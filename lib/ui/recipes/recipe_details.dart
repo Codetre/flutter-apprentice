@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 
-import '../../data/memory_repository.dart';
 import '../../data/models/models.dart';
+import '../../data/repository.dart';
 import '../../network/recipe_model.dart';
 import '../colors.dart';
 
@@ -15,7 +15,7 @@ class RecipeDetails extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final repository = Provider.of<MemoryRepository>(context);
+    final repository = Provider.of<Repository>(context);
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
@@ -28,15 +28,6 @@ class RecipeDetails extends StatelessWidget {
               children: <Widget>[
                 Stack(
                   children: [
-                    // Comment out Align()
-                    // Align(
-                    //   alignment: Alignment.topLeft,
-                    //   child: Image.asset(
-                    //     'assets/images/pizza_w700.png',
-                    //     height: 200,
-                    //     width: 200,
-                    //   ),
-                    // ),
                     Align(
                       alignment: Alignment.topLeft,
                       child: CachedNetworkImage(
@@ -73,7 +64,7 @@ class RecipeDetails extends StatelessWidget {
                   height: 16,
                 ),
                 Padding(
-                    padding: EdgeInsets.only(left: 16.0),
+                    padding: const EdgeInsets.only(left: 16.0),
                     child: Chip(
                       label: Text(getCalories(recipe.calories)),
                     )),

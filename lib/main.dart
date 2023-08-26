@@ -5,7 +5,9 @@ import 'package:logging/logging.dart';
 import 'package:provider/provider.dart';
 
 import 'data/memory_repository.dart';
-import 'mock_service/mock_service.dart';
+import 'data/repository.dart';
+import 'network/recipe_service.dart';
+import 'network/service_interface.dart';
 import 'ui/main_screen.dart';
 
 Future<void> main() async {
@@ -30,13 +32,11 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider<MemoryRepository>(
+        Provider<Repository>(
             lazy: false, create: (BuildContext context) => MemoryRepository()),
-        Provider(
+        Provider<ServiceInterface>(
             lazy: false,
-            /* You should use double dots, which return the caller, not the
-             * return of the method. */
-            create: (BuildContext context) => MockService()..create()),
+            create: (BuildContext context) => RecipeService.create()),
       ],
       child: MaterialApp(
         title: 'Recipes',

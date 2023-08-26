@@ -15,24 +15,29 @@ dependencies:
   path_provider: ^2.0.11
   synchronized: ^3.0.0+3
   sqlbrite: ^2.3.0
-  path: ^1.8.2
+  path: ^1.8.3
   cupertino_icons: ^1.0.5
   chopper: # ^6.0.0
   logging: ^1.0.2
   cached_network_image: ^3.2.2
   provider: ^6.0.3
+#  sqflite: ^2.0.3+1
+  drift_sqflite: ^2.0.1
+  drift: ^2.11.0
+  sqlite3_flutter_libs: ^0.5.0
+
+  json_annotation: ^4.8.0
   equatable: ^2.0.5
   flutter_slidable: ^2.0.0
   platform: ^3.1.0
   flutter_svg: ^1.1.4
   shared_preferences: ^2.0.15
-  json_annotation: ^4.8.0
   http: ^0.13.4
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-
+  drift_dev: ^2.11.0
   build_runner: ^2.4.6
   build_runner_core: ^7.2.0
   json_serializable: ^6.3.1
@@ -40,7 +45,6 @@ dev_dependencies:
   flutter_lints: ^2.0.1
 
 flutter:
-
   uses-material-design: true
 
   assets:

@@ -29,6 +29,7 @@ state 변화에 따라 UI를 직접 바꾸는 것보다, 상태 변화를 추적
 - `path_provider`: simplifies dealing with common file system locations.
 - `synchronized`: helps implement lock mechanisms to prevent concurrent access, when needed.
 - `chopper`: advanced networking than `http`
+- `drift_sqflite`: refreshed `moor`
 - `chopper_generator`: boilerplate code in the form of a part file generator for `chopper`
 - `logging`
 - `provider`

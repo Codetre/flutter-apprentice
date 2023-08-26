@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:logging/logging.dart';
 import 'package:provider/provider.dart';
 
+import 'data/drift/drift_repository.dart';
 import 'data/repository.dart';
 import 'data/sqlite/sqlite_repository.dart';
 import 'network/recipe_service.dart';
@@ -13,8 +14,8 @@ import 'ui/main_screen.dart';
 Future<void> main() async {
   _setupLogging();
   WidgetsFlutterBinding.ensureInitialized();
-  final Repository repository = SqliteRepository();
-  await repository.init();
+  final repository = DriftRepository();
+  repository.init();
   runApp(MyApp(repository: repository));
 }
 
@@ -29,7 +30,7 @@ void _setupLogging() {
 class MyApp extends StatelessWidget {
   final Repository repository;
 
-  const MyApp({required this.repository, Key? key}) : super(key: key);
+  const MyApp({Key? key, required this.repository}) : super(key: key);
 
   // This widget is the root of your application.
   @override
